@@ -1,0 +1,180 @@
+---
+title: "CoronaVirus Dashboard"
+author: "Marcus Lee"
+date: "February 26, 2020"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    css: bootswatch-4.4.1/flatly/bootstrap.css
+    vertical_layout: fill
+---
+
+```{r}
+#install.packages("shiny")
+#install.packages("flexdashboard")
+#install.packages("leaflet")
+#install.packages("ggplot2")
+#install.packages("mapdeck")
+#install.packages("tidyr")
+#install.packages("lubridate")
+#install.packages("tmap")
+#install.packages(c("maps","mapdata"))
+#install.packages("ggmap")
+#install.packages("shinydashboard")
+```
+
+
+```{r setup,include=FALSe}
+library(flexdashboard)
+library(shiny)
+library(shinyWidgets)
+library(shinyjs)
+
+#Core
+library(tidyverse)
+library(tidyquant)
+
+# Interactive Visualization
+library(plotly)
+
+#Database
+
+library(odbc)
+library(RSQLITE)
+
+#Other
+
+library(leaflet)
+library(ggplot2)
+library(mapdeck)
+library(tidyr)
+library(stringr)
+library(lubridate)
+library(dplyr)
+library(maps)
+library(mapdata)
+library(ggthemes)
+
+#library(shinydashboard)
+#library(tmap)
+#library(sf)
+#library(mapview)
+#library(googleway)
+```
+
+```{r}
+confirmed<-read.csv("C:/Users/irons/Desktop/novel-corona-virus-2019-dataset/time_series_19-covid-Confirmed.csv")
+deaths<-read.csv("C:/Users/irons/Desktop/novel-corona-virus-2019-dataset/time_series_19-covid-Deaths.csv")
+recovered<-read.csv("C:/Users/irons/Desktop/novel-corona-virus-2019-dataset/time_series_19-covid-Recovered.csv")
+```
+
+```{r}
+long_confirmed<-confirmed %>% gather(Date,Confirmed_Cases,X1.22.20:X2.25.20) 
+```
+
+```{r}
+long_confirmed$Date <-stringr::str_replace(long_confirmed$Date, '\\X', '')
+```
+
+```{r}
+long_confirmed$Date<-mdy(long_confirmed$Date)
+long_confirmed$Province.State<-as.character(long_confirmed$Province.State)
+long_confirmed$Country.Region<-as.character(long_confirmed$Country.Region)
+```
+
+```{r}
+###Group by countries/region
+by_country<-long_confirmed%>%group_by(Country.Region,Date) %>% summarise(Count=sum(Confirmed_Cases)) %>%arrange(Date,desc(Count))
+exclude_china<-by_country%>%filter(Country.Region!="Mainland China")
+```
+
+```{r}
+#chinese_confirmed<-filter(long_confirmed,str_detect(Country.Region,"Mainland China") &str_detect(Province.State,"Hubei"))
+```
+
+Interactive Data Visualization
+====================================
+
+Row
+-------------------------------------
+
+### Total Confirmed Cases
+
+```{r}
+valueBox(sum(long_confirmed$Confirmed_Cases),
+             icon="fa-exclamation-circle",color="red")
+```
+
+### Deaths
+
+```{r}
+#valueBox(length(conf))
+```
+
+
+
+
+```{r}
+#Inputs{.sidebar}
+#-------------------------------------
+```
+
+```{r}
+# shiny inputs defined here
+#dashboardSidebar(
+#  width=350,
+#  sidebarMenu(
+#    menuItem("Dashboard",tabName="dashboard",icon=icon("dashboard#")
+#             )
+#    )
+#  )
+```
+
+
+```{r}
+#Column {data-width=600}
+#-------------------------------------
+```
+
+```{r}
+#key<-''
+```
+
+```{r}
+#Next video, try to get mapdeck to work
+#df<-confirmed[c(3,4)]
+
+#df <- read.csv(paste0(
+#'https://raw.githubusercontent.com/uber-common/deck.gl-data/master/',
+#'examples/3d-heatmap/heatmap-data.csv'
+#))
+
+#df <- df[!is.na(df$lng), ]
+#df<-confirmed[c(3,4)]
+```
+
+
+```{r}
+### World Map
+```
+
+```{r}
+#leaflet(long_confirmed)%>% addProviderTiles("CartoDB.DarkMatter") %>%setView(100,38,3) %>% addCircles(lng=~Long,lat=~Lat,weight=10,popup=~Province.State)
+```
+
+
+```{r}
+#Column {data-width=400}
+#-------------------------------------
+### Visualization 1
+```
+
+```{r}
+# Most basic bubble plot
+#p <- ggplot(exclude_china, aes(x=Date, y=Count)) + geom_line(aes(colour=factor(Country.Region)))+geom_point()+xlab("")+ylab("Confirmed Cases")+theme_dark()
+#p+scale_x_date(date_labels = "%Y %b %d")
+```
+
+
+
+
